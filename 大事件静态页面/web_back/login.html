@@ -9,6 +9,7 @@
     <link rel="stylesheet" type="text/css" href="css/reset.css">
     <link rel="stylesheet" type="text/css" href="css/iconfont.css">
     <link rel="stylesheet" type="text/css" href="css/main.css">
+    <link rel="stylesheet" href="./js/bootstrap/css/bootstrap.min.css">
 </head>
 
 <body>
@@ -29,8 +30,80 @@
             </form>
         </div>
 
-    </div> 
+    </div>
 
+    <!-- bootsstarp的弹出框 -->
+    <!-- modal -->
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title" id="myModalLabel">提示框!!</h4>
+                </div>
+                <div class="modal-body my-modal-body"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">
+                        狠心关闭
+                    </button>
+                    <button type="button" class="btn btn-primary">残忍确认</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- 导入jq文件 -->
+    <script src="./js/jquery-1.12.4.min.js"></script>
+    <!-- 导入bs的js -->
+    <script src="./js/bootstrap/js/bootstrap.min.js"></script>
+
+    <!-- 正式开始写代码区 -->
+    <script>
+        // 1.给登录按钮添加点击事件
+        $(function () {
+            $('.input_sub').click(function (e) {
+                //2.阻止默认行为
+                e.preventDefault();
+                //3.获取用户名和密码
+                var user_name = $('.input_txt')
+                    .val()//获取用户输入的文本
+                    .trim()//去除输入框的空格
+                var password = $('.input_pass')
+                    .val()
+                    .trim()
+                if (user_name == '' || password == '') {
+                    //4.修改内容
+                    $('.my-modal-body').text('请输入用户名和密码')
+                    $('#myModal').modal()
+                    return
+                    //此处也是需要阻止跳转 所以采用return
+
+                }
+
+                $.ajax({
+                    url: 'https://autumnfish.cn/big/admin/login',
+                    type: 'post',
+                    data: {
+                        user_name: user_name,
+                        password: password
+                    },
+                    success: function (backData) {
+                        if (backData.code == 400) {
+                            $('.my-modal-body').text('请输入用户名和密码')
+                            $('#myModal').modal()
+                        } else if (backData.code == 200) {
+                            //跳转到首页
+                            window.location.href = './index.html'
+                        }
+                    }
+                })
+
+            });
+        });
+
+
+    </script>
 </body>
 
 </html>
