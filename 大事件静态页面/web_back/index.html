@@ -164,12 +164,15 @@
             //修改用户个人信息
             $.ajax({
                 type: 'get',
-                url:'http://localhost:8000/admin/getuser',
-                success:function(backData){
+                url: 'http://localhost:8000/admin/getuser',
+                success: function (backData) {
                     //判断
-                    if(backData.code == 200){
-                        $('.user_info').children('span').html('欢迎&nbsp;&nbsp;李思思')
-                        $('.user_info').children('img').attr('src',)
+                    if (backData.code == 200) {
+                        // console.log(backData);
+                        
+                        $('.user_info').children('span').html('欢迎&nbsp;&nbsp;' + backData.data.nickname);
+                        $('.user_info').children('img').attr('src', backData.data.user_pic);
+                        $('.user_center_link').children('img').attr('src', backData.data.user_pic);
                     }
                 }
             })
