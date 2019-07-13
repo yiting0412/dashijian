@@ -11,6 +11,8 @@
     <link rel="stylesheet" href="css/iconfont.css">
     <link rel="stylesheet" href="css/main.css">
     <script src="js/jquery-1.12.4.min.js"></script>
+    <!-- 导入bc的js文件 -->
+    <script src="./js/bootstrap/js/bootstrap.min.js"></script>
 
 </head>
 
@@ -24,46 +26,150 @@
                 <div class="form-group">
                     <label for="inputEmail3" class="col-sm-2 control-label">用户名称：</label>
                     <div class="col-sm-4">
-                        <input type="text" class="form-control" id="inputEmail3" value="李思思">
+                        <input type="text" class="form-control" name="username" value="李思思">
                     </div>
                 </div>
                 <div class="form-group">
                     <label for="inputEmail3" class="col-sm-2 control-label">昵称：</label>
                     <div class="col-sm-4">
-                        <input type="text" class="form-control" id="inputEmail3" value="思思">
+                        <input type="text" class="form-control" name="nickname" value="思思">
                     </div>
                 </div>
                 <div class="form-group">
                     <label for="inputEmail3" class="col-sm-2 control-label">邮箱：</label>
                     <div class="col-sm-4">
-                        <input type="text" class="form-control" id="inputEmail3" value="lisisi@126.com">
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="inputPassword3" class="col-sm-2 control-label">用户图标：</label>
-                    <div class="col-sm-10">
-                        <img src="images/2.jpg" alt="" class="user_pic">
-                        <input type="file" id="exampleInputFile">
+                        <input type="text" class="form-control" name="email" value="lisisi@126.com">
                     </div>
                 </div>
 
                 <div class="form-group">
-                        <label for="inputEmail3" class="col-sm-2 control-label">密码：</label>
-                        <div class="col-sm-4">
-                            <input type="password" class="form-control" id="inputEmail3" value="12345678">
-                        </div>
+                    <label for="inputPassword3" class="col-sm-2 control-label">用户图标：</label>
+                    <div class="col-sm-10">
+                        <img src="images/2.jpg" alt="" class="user_pic">
+                        <input type="file" id="exampleInputFile" name="user_pic">
                     </div>
-               
-    
+                </div>
+
+                <div class="form-group">
+                    <label for="inputEmail3" class="col-sm-2 control-label">密码：</label>
+                    <div class="col-sm-4">
+                        <input type="password" class="form-control" id="inputEmail3" value="12345678">
+                    </div>
+                </div>
+
+
                 <div class="form-group">
                     <div class="col-sm-offset-2 col-sm-10">
-                        <button type="submit" class="btn btn-success">修改</button>
+                        <button type="submit" class="btn btn-success btn-edit">修改</button>
                     </div>
                 </div>
             </form>
         </div>
     </div>
+    <!-- 美化按钮 -->
+    <!-- 模态栏：Modal -->
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">温馨提示</h4>
+                </div>
+                <div class="modal-body">
+                    修改成功!
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary">确认</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        //入口函数
+        $(function () {
+            //需求：图片预览
+            //1.给图片选择按钮使用change事件
+            $('#exampleInputFile').on('change', function () {
+                //2.获取选中的图片
+                var tupian = this.files[0];
+                //3.调用方法 获取url
+                var url = URL.createObjectURL(tupian);
+                //4.把这个url设置给预览的img的src
+                $('.user_pic').attr('src', url);
+            });
+            $.ajax({
+                //需求：一进到此页面 就需要获取用户个人信息 需要把这些用户信息显示再相应的标签上
+                url: 'http://localhost:8000/admin/userinfo_get',
+                success: function (backData) {
+                    if (backData.code == 200) {
+                        // 此处因为有重复格式的代码  所有可以通过for Key 来遍历设置
+                        for (var key in backData.data) {
+                            $('.' + key).val(backData.data[key]);
+                        }
+                        $('.user_pic').attr('src', backData.data.user_pic);
+                    }
+                }
+            });
+
+
+            //需求：修改用户信息
+            //1.给修改按钮设置点击事件 要去掉a标签的默认跳转事件
+            $('.btn-edit').on('click', function (e) {
+                e.preventDefault();
+                //2.创建formData对象
+                var formData1 = new FormData($('.article_form')[0]);
+                //3.发送ajax请求
+                $.ajax({
+                    type: 'post',
+                    url: 'http://localhost:8000/admin/userinfo_edit',
+                    data: formData1,
+                    contentType: false,
+                    processData: false,
+                    success: function (backData) {
+                        if (backData.code == 200) {
+                            $('#myModal').modal();
+                            $('.btn-primary').on('click', function () {
+                                $.ajax({
+                                    type: 'get',
+                                    url: 'http://localhost:8000/admin/getuser',
+                                    success: function (backData) {
+                                        if (backData.code == 200) {
+                                            parent.$('.user_info')
+                                                // 此处的.user_info在index文件li
+                                                .children(
+                                                    'span').html(
+                                                        '欢迎&nbsp;&nbsp;' +
+                                                        backData.data
+                                                            .nickname);
+
+                                            parent.$('.user_info')
+                                                .children(
+                                                    'img').attr('src',
+                                                        backData.data
+                                                            .user_pic);
+
+                                            parent.$(
+                                                '.user_center_link')
+                                                .children('img').attr(
+                                                    'src', backData.data
+                                                        .user_pic);
+                                        }
+                                    }
+                                })
+                                $('#myModal').modal('hide');
+                            })
+
+                        }
+                    }
+                })
+            })
+        })
+
+
+
+    </script>
 
 </body>
 
