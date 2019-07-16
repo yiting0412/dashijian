@@ -275,7 +275,7 @@
     <script id="art_cate" type="text/html">
         <option value="">所有分类</option>
         {{each data}}
-        <option value="{{value.id}}">{{$value.name}}</option>
+        <option value="{{$value.id}}">{{$value.name}}</option>
         {{/each}}
     </script>
 
@@ -305,13 +305,13 @@
             $.ajax({
                 url: 'http://localhost:8000/admin/category_search',
                 success: function (backData) {
-                    if (backData == 200) {
+                    if (backData.code == 200) {
                         var resHtml = template('art_cate', backData);
                         $('#selCategory').html(resHtml);
 
                     }
                 }
-            })
+            });
 
             function getDate(mypage) {
                 var category = $('#selCategory').val();
@@ -335,16 +335,20 @@
             }
 
 
-            $('#btnSearch').on('click', function (e) {
-                e.preventDefault();
-                getDate(1);
-            });
-            $('#btnSearch').trigger('click');
+            // $('#btnSearch').on('click', function (e) {
+            //     e.preventDefault();
+            //     getDate(1);
+            // });
+            // $('#btnSearch').trigger('click');
 
+
+            //声明一个变量 用来记录获取的总页码数
+            var muYema = 10;
             //分页插件
-            $('.pagination').twbsPagination({
-                totalPages: 25,
-                visiblePages: 6,
+            var $pagination = $('.pagination');
+            var defaultOpts = {
+                totalPages: muYema,
+                visiblePages: 5,
                 first: '首页',
                 last: '尾页',
                 prev: '上一页',
@@ -352,6 +356,48 @@
                 onPageClick: function (event, page) {
                     getDate(page);
                 }
+
+            };
+            $pagination.twbsPagination(defaultOpts);
+
+            function getDate(mypage) {
+                var category = $('#selCategory').val();
+                var selStatus = $('#selStatus').val();
+                $.ajax({
+                    url: 'http://localhost:8000/admin/search',
+                    data: {
+                        type: category,
+                        state: selStatus,
+                        page: mypage,
+                        perpage: 5
+                    },
+                    success: function (backData) {
+                        // console.log(backData);
+                        if (backData.code == 200) {
+                            var resHtml = template('art_list', backData);
+                            $('tbody').html(resHtml);
+
+                            var totalPages = backData.totalPage;
+                            if (muYema != totalPages) {
+                                muYema = totalPages;
+                                var currentPage = $pagination.twbsPagination('getCurrentPage');
+                                $pagination.twbsPagination('destroy');
+                                $pagination.twbsPagination($.extend({}, defaultOpts, {
+                                    startPage: 1,
+                                    totalPages: totalPages
+                                }));
+
+                            }
+                        }
+                    }
+                });
+            }
+
+
+            $('#btnSearch').on('click', function (e) {
+                e.preventDefault();
+                muYema = -1;
+                getDate(1);
             });
 
         });
